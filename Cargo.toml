@@ -1,0 +1,17 @@
+[package]
+name = "my-project"
+version = "0.1.0"
+authors = ["runner"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serenity = { version = "0.12", features = ["client", "gateway", "rustls_backend"] }
+# client: manage the connection between the bot and Discord API
+# gateway: let the bot receive Discord event (member joined, on message)
+# rustls_backend: a TLS implementation for Rust
+
+tokio = { version  = "1", features = ["macros", "rt-multi-thread"]}
+# macros: enable tokio::main so we can use async fn main()
+# rt-multi-thread: deal async task with multiple thread
