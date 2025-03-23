@@ -1,12 +1,12 @@
 use std::env;
 use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
+use serenity::model::application::Command;
 use serenity::async_trait;
 use serenity::prelude::*;
 
 struct Handler;
 
-// implement EventHandler to handle Discord event
 #[async_trait]
 impl EventHandler for Handler {
     async fn message(&self, ctx: Context, msg: Message) {
