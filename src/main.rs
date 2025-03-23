@@ -1,24 +1,51 @@
+mod commands;
+
 use std::env;
-use serenity::model::channel::Message;
+// use serenity::model::channel::Message;
 use serenity::model::gateway::Ready;
-use serenity::model::application::Command;
+use serenity::model::application::{ Command, Interaction };
 use serenity::async_trait;
+use serenity::builder::{ CreateInteractionResponse, CreateInteractionResponseMessage };
 use serenity::prelude::*;
 
 struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
-    async fn message(&self, ctx: Context, msg: Message) {
-        if msg.content == "!hello" {
-            if let Err(cause) = msg.channel_id.say(&ctx.http, "Hello World").await {
-                println!("unable to send msg. reason: {:?}", cause);
+    async fn ready(&self, ctx: Context, ready: Ready) {
+        println!("Logged in as: {}", ready.user.name);
+        let guild_command = Command::create_global_command(
+            &ctx.http,
+            commands::ping::register()
+        ).await;
+        println!("I created the following global slash command: {guild_command:#?}");
+    }
+    
+    // async fn message(&self, ctx: Context, msg: Message) {
+    //     if msg.content == "!hello" {
+    //         if let Err(cause) = msg.channel_id.say(&ctx.http, "Hello World").await {
+    //             println!("unable to send msg. reason: {:?}", cause);
+    //         }
+    //     }
+    // }
+
+    async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
+        if let Interaction::Command(command) = interaction {
+            println!("interaction: {command:#?}");
+            let content = match command.data.name.as_str() {
+                "ping" => Some(commands::ping::run(&command.data.options())),
+                "id" => Some(commands::id::run(&command.data.options())),
+                _ => Some("not implemented".to_string()),
+            };
+
+            if let Some(content) = content {
+                let data = CreateInteractionResponseMessage::new().content(content);
+                let builder = CreateInteractionResponse::Message(data);
+                if let Err(cause) = command.create_response(&ctx.http, builder).await {
+                    println!("unable to respond to slash command {cause}");
+                }
             }
         }
-    }
-
-    async fn ready(&self, _: Context, ready: Ready) {
-        println!("Logged in as: {}", ready.user.name);
     }
 }
 
