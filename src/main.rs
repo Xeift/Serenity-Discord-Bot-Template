@@ -14,11 +14,16 @@ struct Handler;
 impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         println!("Logged in as: {}", ready.user.name);
-        let guild_command = Command::create_global_command(
+        // register commands
+        let _ = Command::create_global_command(
             &ctx.http,
             commands::ping::register()
         ).await;
-        println!("I created the following global slash command: {guild_command:#?}");
+        let _ = Command::create_global_command(
+            &ctx.http,
+            commands::id::register()
+        ).await;
+        println!("Slash commands registered.");
     }
     
     // async fn message(&self, ctx: Context, msg: Message) {
@@ -32,6 +37,7 @@ impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::Command(command) = interaction {
             println!("interaction: {command:#?}");
+            // handle different commands
             let content = match command.data.name.as_str() {
                 "ping" => Some(commands::ping::run(&command.data.options())),
                 "id" => Some(commands::id::run(&command.data.options())),
